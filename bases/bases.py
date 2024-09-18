@@ -142,6 +142,3 @@ def encode_b65536(raw: bytes) -> str:
 
 def decode_b65536(encoded: str) -> bytes:
     return base65536.decode(encoded)
-
-print(encode_b65536(b'rwqhfasdkhsajkdfhasjkfhasjkhjk'))
-print(decode_b65536('𔕲鵱陦饳鵫陳ꉪ魤陨ꅳ魫陨ꅳ鵫ꉪ'))
