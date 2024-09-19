@@ -30,7 +30,7 @@ def byte2dword(x: List[int] | bytes):
             x += [0] * (4 - (len(x) % 4))
     return [v[0] for v in (unpack('<I', bytes(x[i:i+4])) for i in range(0, len(x), 4))]
 
-def dword2bytes(x: List[int] | int):
+def dword2byte(x: List[int] | int):
     result = []
     if type(x) == int:
         for j in range(4):
@@ -38,5 +38,24 @@ def dword2bytes(x: List[int] | int):
         return bytes(result)
     for i in range(len(x)):
         for j in range(4):
+            result.append((x[i] >> j*8) & 0xff)
+    return bytes(result)
+
+def byte2word(x: List[int] | bytes):
+    if len(x) % 2 != 0:
+        if type(x) == bytes:
+            x += b'\x00' * (2 - (len(x) % 2))
+        else:
+            x += [0] * (2 - (len(x) % 2))
+    return [v[0] for v in (unpack('<H', bytes(x[i:i+2])) for i in range(0, len(x), 2))]
+
+def word2byte(x: List[int] | int):
+    result = []
+    if type(x) == int:
+        for j in range(2):
+            result.append((x >> j*8) & 0xff)
+        return bytes(result)
+    for i in range(len(x)):
+        for j in range(2):
             result.append((x[i] >> j*8) & 0xff)
     return bytes(result)
