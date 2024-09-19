@@ -41,7 +41,6 @@ def decode_b32(encoded: str, table: str = "") -> bytes:
     table = BASE32_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE32_STD_TABLE)
     return base64.b32decode(encoded)
-
 def encode_b32(raw: bytes, table: str = "") -> str:
     result = base64.b32encode(raw)
     table = BASE32_STD_TABLE if table == "" else table
