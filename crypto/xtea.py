@@ -1,36 +1,34 @@
 from typing import List, Tuple
-def xtea_encrypt(src: Tuple[int, int], key: List[int], delta: int = 0x9e3779b9, rounds: int = 32):
-    l, r = src
-    l &= 0xffffffff
-    r &= 0xffffffff
-    sum = 0
+from ctypes import c_uint32
+
+def xtea_encrypt(
+    src: Tuple[int, int], key: List[int], delta: int = 0x9E3779B9, rounds: int = 32
+):
+    l, r = c_uint32(src[0]), c_uint32(src[1])
+    sum = c_uint32(0)
+    k = [c_uint32(key[0]), c_uint32(key[1]), c_uint32(key[2]), c_uint32(key[3])]
     for _ in range(rounds):
-        l += (((r << 4) ^ (r >> 5)) + r) ^ (sum + key[sum & 3])
-        l &= 0xFFFFFFFF
+        l.value += (((r.value << 4) ^ (r.value >> 5)) + r.value) ^ (
+            sum.value + k[sum.value & 3].value
+        )
+        sum.value += delta
+        r.value += (((l.value << 4) ^ (l.value >> 5)) + l.value) ^ (
+            sum.value + k[(sum.value >> 11) & 3].value
+        )
+    return (l.value, r.value)
 
-        sum += delta
-        sum &= 0xFFFFFFFF
-
-        r += (((l << 4) ^ (l >> 5)) + l) ^ (sum + key[(sum >> 11) & 3])
-        r &= 0xFFFFFFFF
-
-    return (l, r)
-
-
-def xtea_decrypt(src: Tuple[int, int], key: List[int], delta: int = 0x9e3779b9, rounds: int = 32):
-    l, r = src
-    l &= 0xffffffff
-    r &= 0xffffffff
-    sum = (rounds * delta) & 0xffffffff
+def xtea_decrypt(
+    src: Tuple[int, int], key: List[int], delta: int = 0x9E3779B9, rounds: int = 32
+):
+    l, r = c_uint32(src[0]), c_uint32(src[1])
+    sum = c_uint32(delta * rounds)
+    k = [c_uint32(key[0]), c_uint32(key[1]), c_uint32(key[2]), c_uint32(key[3])]
     for _ in range(rounds):
-        r -= (((l << 4) ^ (l >> 5)) + l) ^ (sum + key[(sum >> 11) & 3])
-        r &= 0xFFFFFFFF
-
-        sum -= delta
-        sum &= 0xFFFFFFFF
-
-        l -= (((r << 4) ^ (r >> 5)) + r) ^ (sum + key[sum & 3])
-        l &= 0xFFFFFFFF
-
-
-    return (l, r)
+        r.value -= (((l.value << 4) ^ (l.value >> 5)) + l.value) ^ (
+            sum.value + k[(sum.value >> 11) & 3].value
+        )
+        sum.value -= delta
+        l.value -= (((r.value << 4) ^ (r.value >> 5)) + r.value) ^ (
+            sum.value + k[sum.value & 3].value
+        )
+    return (l.value, r.value)

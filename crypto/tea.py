@@ -1,36 +1,43 @@
 from typing import List, Tuple
-def tea_encrypt(src: Tuple[int, int], key: List[int], delta: int = 0x9e3779b9, rounds: int = 32):
-    l, r = src
-    l &= 0xffffffff
-    r &= 0xffffffff
-    sum = 0
-    k0, k1, k2, k3 = key[0], key[1], key[2], key[3]
+from ctypes import c_uint32
+
+def tea_encrypt(
+    src: Tuple[int, int], key: List[int], delta: int = 0x9E3779B9, rounds: int = 32
+):
+    l, r = c_uint32(src[0]), c_uint32(src[1])
+    sum = c_uint32(0)
+    k = [c_uint32(i) for i in key]
+    k = [c_uint32(key[0]), c_uint32(key[1]), c_uint32(key[2]), c_uint32(key[3])]
     for _ in range(rounds):
-        sum += delta
-        sum &= 0xFFFFFFFF
+        sum.value += delta
+        l.value += (
+            ((r.value << 4) + k[0].value)
+            ^ (r.value + sum.value)
+            ^ ((r.value >> 5) + k[1].value)
+        )
+        r.value += (
+            ((l.value << 4) + k[2].value)
+            ^ (l.value + sum.value)
+            ^ ((l.value >> 5) + k[3].value)
+        )
+    return (l.value, r.value)
 
-        l += ((r << 4) + k0) ^ (r + sum) ^ ((r >> 5) + k1)
-        l &= 0xFFFFFFFF
-
-        r += ((l << 4) + k2) ^ (l + sum) ^ ((l >> 5) + k3)
-        r &= 0xFFFFFFFF
-    return (l, r)
-
-
-def tea_decrypt(src: Tuple[int, int], key: List[int], delta: int = 0x9e3779b9, rounds: int = 32):
-    l, r = src
-    l &= 0xffffffff
-    r &= 0xffffffff
-    sum = (delta * rounds) & 0xffffffff
-    k0, k1, k2, k3 = key[0], key[1], key[2], key[3]
+def tea_decrypt(
+    src: Tuple[int, int], key: List[int], delta: int = 0x9E3779B9, rounds: int = 32
+):
+    l, r = c_uint32(src[0]), c_uint32(src[1])
+    sum = c_uint32(delta * rounds)
+    k = [c_uint32(i) for i in key]
     for _ in range(rounds):
-        r -= ((l << 4) + k2) ^ (l + sum) ^ ((l >> 5) + k3)
-        r &= 0xFFFFFFFF
-
-        l -= ((r << 4) + k0) ^ (r + sum) ^ ((r >> 5) + k1)
-        l &= 0xFFFFFFFF
-
-        sum -= delta
-        sum &= 0xFFFFFFFF
-
-    return (l, r)
+        r.value -= (
+            ((l.value << 4) + k[2].value)
+            ^ (l.value + sum.value)
+            ^ ((l.value >> 5) + k[3].value)
+        )
+        l.value -= (
+            ((r.value << 4) + k[0].value)
+            ^ (r.value + sum.value)
+            ^ ((r.value >> 5) + k[1].value)
+        )
+        sum.value -= delta
+    return (l.value, r.value)

@@ -3,3 +3,4 @@ from .bxors import bxorr_dec, bxorr_enc, bxor
 from .xxtea import xxtea_decrypt, xxtea_encrypt, xxtea_ciscn2024_shift, xxtea_std_shift
 from .xtea import xtea_decrypt, xtea_encrypt
 from .tea import tea_decrypt, tea_encrypt
+from .blowfish import BlowFish

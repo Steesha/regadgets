@@ -1,56 +1,71 @@
 from typing import List
 from struct import pack
+from ctypes import c_uint32
+
+
 def xxtea_std_shift(z, y, sum, k, p, e):
-    return (
-            (  ((z >> 5) ^ (y << 2)) +  ((y >> 3) ^ (z << 4))  )
-            ^
-            (       (sum ^ y)        +   (k[(p & 3) ^ e] ^ z)  )
-        )
+    return (((z.value >> 5) ^ (y.value << 2)) + ((y.value >> 3) ^ (z.value << 4))) ^ (
+        (sum.value ^ y.value) + (k[(p & 3) ^ e.value].value ^ z.value)
+    )
+
 
 def xxtea_ciscn2024_shift(z, y, sum, k, p, e):
-    return ( 
-            (  ((z >> 5) ^ (y << 2)) +  ((y >> 3) ^ (z << 4))  )
-            ^ 
-            (       (sum ^ y)                                  )
-        )                            +   (k[(p & 3) ^ e] ^ z)
-            
-def xxtea_encrypt(src: list, key: List[int], delta: int = 0x9e3779b9, 
-                  additional_rounds: int = 0, shift_func = xxtea_std_shift):
-    delta &= 0xffffffff
+    return (
+        (((z.value >> 5) ^ (y.value << 2)) + ((y.value >> 3) ^ (z.value << 4)))
+        ^ ((sum.value ^ y.value))
+    ) + (k[(p & 3) ^ e.value].value ^ z.value)
+
+
+def xxtea_encrypt(
+    src: List[int],
+    key: List[int],
+    delta: int = 0x9E3779B9,
+    additional_rounds: int = 0,
+    shift_func=xxtea_std_shift,
+):
+    src = [c_uint32(i) for i in src]
+    key = [c_uint32(i) for i in key]
+    sum, e = c_uint32(0), c_uint32(0)
+    delta = c_uint32(delta)
     n = len(src)
     rounds = 6 + 52 // n + additional_rounds
-    sum = 0
     z = src[n - 1]
     for _ in range(rounds):
-        sum = (sum + delta) & 0xFFFFFFFF
-        e = (sum >> 2) & 3
-        for i in range(n - 1):
-            y = src[i + 1]
-            src[i] = (src[i] + shift_func(z, y, sum, key, i, e)) & 0xFFFFFFFF
-            z = src[i]
-        i += 1
-        src[n - 1] = (src[n - 1] + shift_func(z, src[0], sum, key, i, e)) & 0xFFFFFFFF
+        sum.value += delta.value
+        e.value = (sum.value >> 2) & 3
+        for p in range(n - 1):
+            src[p].value += shift_func(z, src[p + 1], sum, key, p, e)
+            z = src[p]
+        p += 1
+        src[n - 1].value += shift_func(z, src[0], sum, key, p, e)
         z = src[n - 1]
-    return src
+    return [i.value for i in src]
+
 
 # To reverse xxtea, you need to know:
 # function shift, delta, addition_rounds.
-def xxtea_decrypt(src: list, key: List[int], delta: int = 0x9E3779B9, 
-                  additional_rounds: int = 0, shift_func = xxtea_std_shift):
-    delta &= 0xffffffff
+def xxtea_decrypt(
+    src: List[int],
+    key: List[int],
+    delta: int = 0x9E3779B9,
+    additional_rounds: int = 0,
+    shift_func=xxtea_std_shift,
+):
+    src = [c_uint32(i) for i in src]
+    key = [c_uint32(i) for i in key]
+    sum, e, y = c_uint32(0), c_uint32(0), c_uint32(0)
+    delta = c_uint32(delta)
     n = len(src)
     rounds = 6 + 52 // n + additional_rounds
-    sum = (rounds * delta) & 0xFFFFFFFF
+    sum.value = rounds * delta.value
     y = src[0]
     for _ in range(rounds):
-        e = (sum >> 2) & 3
+        e.value = (sum.value >> 2) & 3
         for p in range(n - 1, 0, -1):
-            z = src[p - 1]
-            src[p] = (src[p] - shift_func(z, y, sum, key, p, e)) & 0xFFFFFFFF
+            src[p].value -= shift_func(src[p - 1], y, sum, key, p, e)
             y = src[p]
         p -= 1
-        z = src[n - 1]
-        src[0] = (src[0] - shift_func(z, y, sum, key, p, e)) & 0xFFFFFFFF
+        src[0].value -= shift_func(src[n - 1], y, sum, key, p, e)
         y = src[0]
-        sum = (sum - delta) & 0xFFFFFFFF
-    return src
+        sum.value -= delta.value
+    return [i.value for i in src]
