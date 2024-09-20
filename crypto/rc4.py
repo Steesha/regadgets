@@ -1,4 +1,4 @@
-from typing import List, Generator
+from typing import List, Iterator
 def rc4_init(key: bytes) -> List[int]:
     s = list(range(256))
     j = 0
@@ -30,7 +30,7 @@ def rc4_crypt(s: bytes, data: bytes) -> bytes:
 
     return bytes(result)
 
-def rc4_keystream(s: bytes, buf_len: int)-> Generator[int]:
+def rc4_keystream(s: bytes, buf_len: int)-> Iterator[int]:
     i, j = 0, 0
     # Generate the keystream
     for _ in range(buf_len):
