@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Generator
 def rc4_init(key: bytes) -> List[int]:
     s = list(range(256))
     j = 0
@@ -14,8 +14,7 @@ def rc4_init(key: bytes) -> List[int]:
     return s
 
 def rc4_crypt(s: bytes, data: bytes) -> bytes:
-    i = 0
-    j = 0
+    i, j = 0, 0
     result = bytearray()
 
     # Pseudo-random generation algorithm (PRGA)
@@ -31,13 +30,10 @@ def rc4_crypt(s: bytes, data: bytes) -> bytes:
 
     return bytes(result)
 
-def rc4_keystream(s: bytes, buf_len: int) -> List[int]:
-    i = 0
-    j = 0
-    keystream = bytearray()
-
+def rc4_keystream(s: bytes, buf_len: int)-> Generator[int]:
+    i, j = 0, 0
     # Generate the keystream
-    for k in range(buf_len):
+    for _ in range(buf_len):
         i = (i + 1) % 256
         j = (j + s[i]) % 256
 
@@ -45,6 +41,4 @@ def rc4_keystream(s: bytes, buf_len: int) -> List[int]:
         s[i], s[j] = s[j], s[i]
 
         t = (s[i] + s[j]) % 256
-        keystream.append(s[t])
-
-    return keystream
+        yield s[t]
