@@ -60,6 +60,26 @@ def word2byte(x: List[int] | int):
             result.append((x[i] >> j*8) & 0xff)
     return bytes(result)
 
+
+def byte2qword(x: List[int] | bytes):
+    if len(x) % 8 != 0:
+        if type(x) == bytes:
+            x += b'\x00' * (8 - (len(x) % 8))
+        else:
+            x += [0] * (8 - (len(x) % 8))
+    return [v[0] for v in (unpack('<Q', bytes(x[i:i+8])) for i in range(0, len(x), 8))]
+
+def qword2byte(x: List[int] | int):
+    result = []
+    if type(x) == int:
+        for j in range(8):
+            result.append((x >> j*8) & 0xff)
+        return bytes(result)
+    for i in range(len(x)):
+        for j in range(8):
+            result.append((x[i] >> j*8) & 0xff)
+    return bytes(result)
+
 # pack to tuple [(),(),(),...], each tuple len is `crows`
 def pack_dword(x: List[int], crows: int = 2, padding: bool = False):
     if len(x) % crows != 0:

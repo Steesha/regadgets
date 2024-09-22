@@ -7,7 +7,7 @@ def rc4_init(key: bytes) -> List[int]:
     # Key scheduling algorithm (KSA)
     for i in range(256):
         # permit key is empty.
-        j = (j + s[i] + 0 if key_length == 0 else key[i % key_length]) % 256
+        j = (j + s[i] + 0 if key_length == 0 else j + s[i] + key[i % key_length]) % 256
         # Swap s[i], s[j]
         s[i], s[j] = s[j], s[i]
 
