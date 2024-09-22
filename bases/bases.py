@@ -23,6 +23,8 @@ BASE92_STD_TABLE = r"!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\
 def str_trans(raw: str, from_table: str, to_table: str) -> str:
     if from_table == to_table:
         return raw
+    if len(from_table) == len(to_table) - 1:
+        from_table += '='
     trans = str.maketrans(from_table, to_table)
     return raw.translate(trans)
 
