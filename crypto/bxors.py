@@ -35,3 +35,9 @@ def bxor(data1: bytes | list, data2: bytes | list) -> bytes:
     if len(data1) != len(data2):
         return b''
     return bytes([i ^ j for i, j in zip(data1, data2)])
+
+def bxor_cycle(data1: bytes | list, data_cycle: bytes | list) -> bytes:
+    result = []
+    for i in range(len(data1)):
+        result.append(data1[i] ^ data_cycle[i % len(data_cycle)])
+    return bytes(result)
