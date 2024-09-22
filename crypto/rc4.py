@@ -1,5 +1,7 @@
 from typing import List, Iterator
-def rc4_init(key: bytes) -> List[int]:
+def rc4_init(key: bytes | str) -> List[int]:
+    if type(key) == str:
+        key = key.encode()
     s = list(range(256))
     j = 0
     key_length = len(key)
