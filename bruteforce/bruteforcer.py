@@ -1,3 +1,4 @@
+import time
 import string
 
 def xor_decrypt(data: bytes, key: int) -> bytes:
@@ -56,7 +57,9 @@ def rg_brute_forcer(data: bytes | list, max_depth: int):
     
     for depth in range(1, max_depth + 1):
         print(f"尝试深度 {depth} 的解密...")
+        start_time = time.time()
         if decrypt_recursive(data, depth, methods):
-            print(f"成功在深度 {depth} 找到解密方案")
+            print(f"[成功] 在深度 {depth} 找到解密方案，用时 {time.time() - start_time}秒")
             return
+        print(f"[失败] 没有在深度 {depth} 找到解密方案，用时 {time.time() - start_time}秒")
     print("未找到正确的解密链")
