@@ -1,6 +1,5 @@
 from typing import List
 from ctypes import c_uint32
-from ctypes import c_uint64
 
 def xxtea_std_shift(z, y, sum, k, p, debug = False):
     if debug:
