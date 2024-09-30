@@ -1,5 +1,4 @@
 from typing import List
-from struct import pack
 from ctypes import c_uint32
 from ctypes import c_uint64
 
