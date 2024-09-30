@@ -7,6 +7,9 @@ def xor_decrypt(data: bytes, key: int) -> bytes:
 def mod_add_decrypt(data: bytes, key: int) -> bytes:
     return bytes([(b + key) % 256 for b in data])
 
+def mod_mul(data: bytes, key: int) -> bytes:
+    return bytes([(b * key) % 256 for b in data])
+
 permit = string.ascii_letters + string.digits + "}{_-"
 permit = list(permit.encode())
 
@@ -40,6 +43,11 @@ def decrypt_recursive(data: bytes, depth: int, methods: list, path: list = None)
                 new_data = method(data, key)
                 if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
                     return True
+        elif method == mod_mul:
+             for key in range(256):
+                new_data = method(data, key)
+                if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
+                    return True
         else:
             new_data = method(data)
             if decrypt_recursive(new_data, depth - 1, methods, path + [method.__name__]):
@@ -53,7 +61,7 @@ def rg_brute_forcer(data: bytes | list, max_depth: int):
         data = bytes(data)
     elif not isinstance(data, bytes):
         raise "Input Data should be bytes | list"
-    methods = [xor_decrypt, mod_add_decrypt]
+    methods = [xor_decrypt, mod_add_decrypt, mod_mul]
     
     for depth in range(1, max_depth + 1):
         print(f"尝试深度 {depth} 的解密...")
