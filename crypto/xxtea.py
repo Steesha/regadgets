@@ -33,6 +33,7 @@ def xxtea_std_shift(z, y, sum, k, p, debug = False):
         print("LyRz= ", hex(LyRz))
         print("K   = ", hex(K))
         print("KZ  = ", hex(KZ))
+        print("ret = ", hex(result))
         print("-----------------XXTEA_STD_SHIFT-----------------")
     return result
 
