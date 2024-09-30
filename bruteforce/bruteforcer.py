@@ -36,16 +36,25 @@ def decrypt_recursive(data: bytes, depth: int, methods: list, path: list = None)
         if method == xor_decrypt:
             for key in range(256):
                 new_data = method(data, key)
+                if depth + 1 == len(path):
+                    if not all([i >= 0x20 and i <= 0x7f for i in new_data]):
+                        return False
                 if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
                     return True
         elif method == mod_add_decrypt:
              for key in range(256):
                 new_data = method(data, key)
+                if depth + 1 == len(path):
+                    if not all([i >= 0x20 and i <= 0x7f for i in new_data]):
+                        return False
                 if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
                     return True
         elif method == mod_mul:
              for key in range(256):
                 new_data = method(data, key)
+                if depth + 1 == len(path):
+                    if not all([i >= 0x20 and i <= 0x7f for i in new_data]):
+                        return False
                 if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
                     return True
         else:
