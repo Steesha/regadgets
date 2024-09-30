@@ -1,5 +1,5 @@
 from typing import List
-from struct import pack, unpack
+from struct import unpack
 
 def ror8(x, n):
     return ((x >> n) | (x << (8 - n))) & 0xFF
