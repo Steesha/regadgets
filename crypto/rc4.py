@@ -1,5 +1,5 @@
 from typing import List, Iterator
-def rc4_init(key: bytes | str, box_size: int = 256) -> List[int]:
+def rc4_init(key: bytes, box_size: int = 256) -> List[int]:
     if type(key) == str:
         key = key.encode()
     s = list(range(box_size))

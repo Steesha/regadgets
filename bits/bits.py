@@ -22,7 +22,7 @@ def ror64(x, n):
     return ((x >> n) | (x << (64 - n))) & 0xFFFFFFFFFFFFFFFF
 
 
-def byte2dword(x: List[int] | bytes):
+def byte2dword(x: List[int]):
     if len(x) % 4 != 0:
         if type(x) == bytes:
             x += b'\x00' * (4 - (len(x) % 4))
@@ -30,7 +30,7 @@ def byte2dword(x: List[int] | bytes):
             x += [0] * (4 - (len(x) % 4))
     return [v[0] for v in (unpack('<I', bytes(x[i:i+4])) for i in range(0, len(x), 4))]
 
-def dword2byte(x: List[int] | int):
+def dword2byte(x: List[int]):
     result = []
     if type(x) == int:
         for j in range(4):
@@ -41,7 +41,7 @@ def dword2byte(x: List[int] | int):
             result.append((x[i] >> j*8) & 0xff)
     return bytes(result)
 
-def byte2word(x: List[int] | bytes):
+def byte2word(x: List[int]):
     if len(x) % 2 != 0:
         if type(x) == bytes:
             x += b'\x00' * (2 - (len(x) % 2))
@@ -49,7 +49,7 @@ def byte2word(x: List[int] | bytes):
             x += [0] * (2 - (len(x) % 2))
     return [v[0] for v in (unpack('<H', bytes(x[i:i+2])) for i in range(0, len(x), 2))]
 
-def word2byte(x: List[int] | int):
+def word2byte(x: List[int]):
     result = []
     if type(x) == int:
         for j in range(2):
@@ -61,7 +61,7 @@ def word2byte(x: List[int] | int):
     return bytes(result)
 
 
-def byte2qword(x: List[int] | bytes):
+def byte2qword(x: List[int]):
     if len(x) % 8 != 0:
         if type(x) == bytes:
             x += b'\x00' * (8 - (len(x) % 8))
@@ -69,7 +69,7 @@ def byte2qword(x: List[int] | bytes):
             x += [0] * (8 - (len(x) % 8))
     return [v[0] for v in (unpack('<Q', bytes(x[i:i+8])) for i in range(0, len(x), 8))]
 
-def qword2byte(x: List[int] | int):
+def qword2byte(x: List[int]):
     result = []
     if type(x) == int:
         for j in range(8):

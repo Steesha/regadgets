@@ -4,7 +4,6 @@ import regadgets.bases.base91 as base91
 import regadgets.bases.py3base92 as py3base92
 import regadgets.bases.base62 as base62
 import regadgets.bases.base45 as base45
-import regadgets.bases.base128 as base128
 import regadgets.bases.base2048 as base2048
 import regadgets.bases.base65536 as base65536
 
@@ -123,14 +122,6 @@ def encode_b92(raw: bytes, table: str = "") -> str:
     table = BASE92_STD_TABLE if table == "" else table
     result = str_trans(result, BASE92_STD_TABLE, table)
     return result
-
-def encode_b128(raw: bytes) -> List[bytes | int]:
-    b128 = base128.base128()
-    return list(b128.encode(raw)) 
-
-def decode_b128(encoded: List[bytes | int]) -> bytes:
-    b128 = base128.base128()
-    return b''.join(b128.decode(encoded))
 
 def encode_b2048(raw: bytes) -> str:
     return base2048.encode(raw)

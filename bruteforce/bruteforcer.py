@@ -65,7 +65,7 @@ def decrypt_recursive(data: bytes, depth: int, methods: list, path: list = None)
     return False
 
 # 爆破函数：输入密文和最大深度，逐步递归尝试解密
-def rg_brute_forcer(data: bytes | list, max_depth: int):
+def rg_brute_forcer(data: bytes, max_depth: int):
     if isinstance(data, list):
         data = bytes(data)
     elif not isinstance(data, bytes):
