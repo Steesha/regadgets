@@ -55,6 +55,3 @@ class AList:
     def __eq__(self, other):
         print(f"{self.nums} == {other}")
         return self.nums == other
-
-if __name__ == '__main__':
-    print(res)
