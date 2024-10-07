@@ -1,11 +1,9 @@
 from z3 import sat, Z3Exception, Z3_UNINTERPRETED_SORT, is_array, Or, Solver
 from copy import deepcopy
-def z3_get_models(s: Solver, count = 1):
+def z3_get_models(s: Solver):
     s = deepcopy(s)
-    result = []
-    while len(result) < count and s.check() == sat:
+    while s.check() == sat:
         m = s.model()
-        result.append(m)
         # Create a new constraint the blocks the current model
         block = []
         for d in m:
@@ -18,4 +16,5 @@ def z3_get_models(s: Solver, count = 1):
                 raise Z3Exception("arrays and uninterpreted sorts are not supported")
             block.append(c != m[d])
         s.add(Or(block))
-    return result
+        yield m
+    return
