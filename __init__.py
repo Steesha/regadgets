@@ -4,3 +4,4 @@ from .crypto import *
 from .trans import *
 from .bruteforce import *
 from .utils import *
+from .math import *

@@ -1,5 +1,6 @@
 from typing import List
 from struct import unpack
+import ctypes
 
 def ror8(x, n):
     return ((x >> n) | (x << (8 - n))) & 0xFF
@@ -203,3 +204,14 @@ def b2l(s):
     for i in range(0, length, 4):
         acc = (acc << 32) + unpack('>I', s[i:i+4])[0]
     return acc
+
+# 8bytes->1double (with padding)
+def byte2double(src: bytes) -> List[float]:
+    qws = byte2qword(src)
+    result = []
+    for i in qws:
+        full_value = ctypes.c_uint64(i)
+        double_value = ctypes.cast(ctypes.pointer(full_value), ctypes.POINTER(ctypes.c_double)).contents.value
+        result.append(double_value)
+    return result
+        
