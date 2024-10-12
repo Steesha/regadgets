@@ -1,5 +1,6 @@
 import time
 import string
+from regadgets.bits import rol8
 
 def xor_decrypt(data: bytes, key: int) -> bytes:
     return bytes([b ^ key for b in data])
@@ -10,7 +11,10 @@ def mod_add_decrypt(data: bytes, key: int) -> bytes:
 def mod_mul(data: bytes, key: int) -> bytes:
     return bytes([(b * key) % 256 for b in data])
 
-permit = string.ascii_letters + string.digits + "}{_-"
+def mod_rol(data: bytes, key: int) -> bytes:
+    return bytes([rol8(b, key) % 256 for b in data])
+
+permit = string.printable
 permit = list(permit.encode())
 
 def contains_target(data: bytes) -> bool:
@@ -57,6 +61,14 @@ def decrypt_recursive(data: bytes, depth: int, methods: list, path: list = None)
                         return False
                 if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
                     return True
+        elif method == mod_rol:
+             for key in range(8):
+                new_data = method(data, key)
+                if depth + 1 == len(path):
+                    if not all([i >= 0x20 and i <= 0x7f for i in new_data]):
+                        return False
+                if decrypt_recursive(new_data, depth - 1, methods, path + [(method.__name__, key)]):
+                    return True
         else:
             new_data = method(data)
             if decrypt_recursive(new_data, depth - 1, methods, path + [method.__name__]):
@@ -70,7 +82,7 @@ def rg_brute_forcer(data: bytes, max_depth: int):
         data = bytes(data)
     elif not isinstance(data, bytes):
         raise "Input Data should be bytes | list"
-    methods = [xor_decrypt, mod_add_decrypt, mod_mul]
+    methods = [xor_decrypt, mod_add_decrypt, mod_mul, mod_rol]
     
     for depth in range(1, max_depth + 1):
         print(f"尝试深度 {depth} 的解密...")
