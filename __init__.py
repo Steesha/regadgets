@@ -5,3 +5,4 @@ from .trans import *
 from .bruteforce import *
 from .utils import *
 from .math import *
+from .rands import *
