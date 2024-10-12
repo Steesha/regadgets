@@ -1,13 +1,11 @@
 import base64
-import regadgets.bases.base58 as base58
-import regadgets.bases.base91 as base91
-import regadgets.bases.py3base92 as py3base92
-import regadgets.bases.base62 as base62
-import regadgets.bases.base45 as base45
-import regadgets.bases.base2048 as base2048
-import regadgets.bases.base65536 as base65536
-
-from typing import List
+import base58
+import base91
+import py3base92
+import base62
+import base45
+import base2048
+import base65536
 
 BASE16_STD_TABLE = r"0123456789ABCDEF"
 BASE32_STD_TABLE = r"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
