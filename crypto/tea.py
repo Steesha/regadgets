@@ -3,7 +3,7 @@ from ctypes import c_uint32
 from ..bits.bits import byte2dword, dword2byte, pack_dword
 
 def tea_encrypt(
-    src: Union[Tuple[int, int], bytes, List[int]], key: List[int], delta: int = 0x9E3779B9, rounds: int = 32
+    src: Union[Tuple[int, int], bytes, List[int]], key: Union[List[int], bytes], delta: int = 0x9E3779B9, rounds: int = 32
 ) -> Union[Tuple[int, int], bytes, List[int]]:
     if type(src) == bytes:
         result = b''
@@ -15,7 +15,13 @@ def tea_encrypt(
         for i in pack_dword(src):
             result += dword2byte(tea_encrypt(i, key, delta, rounds))
         return result
-    
+    elif type(src) != tuple:
+        raise "wrong src type"
+    # For bytes key
+    if type(key) == bytes:
+        key = byte2dword(key)
+    elif type(key) != list:
+        raise "wrong key type" 
     l, r = c_uint32(src[0]), c_uint32(src[1])
     sum = c_uint32(0)
     k = [c_uint32(i) for i in key]
@@ -35,7 +41,7 @@ def tea_encrypt(
     return (l.value, r.value)
 
 def tea_decrypt(
-    src: Union[Tuple[int, int], bytes, List[int]], key: List[int], delta: int = 0x9E3779B9, rounds: int = 32
+    src: Union[Tuple[int, int], bytes, List[int]], key: Union[List[int], bytes], delta: int = 0x9E3779B9, rounds: int = 32
 ) -> Union[Tuple[int, int], bytes, List[int]]:
     if type(src) == bytes:
         result = b''
@@ -47,6 +53,13 @@ def tea_decrypt(
         for i in pack_dword(src):
             result += dword2byte(tea_decrypt(i, key, delta, rounds))
         return result
+    elif type(src) != tuple:
+        raise "wrong src type"
+    # For bytes key
+    if type(key) == bytes:
+        key = byte2dword(key)
+    elif type(key) != list:
+        raise "wrong key type"
     l, r = c_uint32(src[0]), c_uint32(src[1])
     sum = c_uint32(delta * rounds)
     k = [c_uint32(i) for i in key]

@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Union
 from ctypes import c_uint32
+from ..bits import byte2dword, dword2byte
 
 def xxtea_std_shift(z, y, sum, k, p, debug = False):
     if debug:
@@ -52,14 +53,18 @@ def xxtea_ciscn2024_shift(z, y, sum, k, p, debug = False):
     return result
 
 def xxtea_encrypt(
-    src: List[int],
-    key: List[int],
+    src: Union[List[int], bytes],
+    key: Union[List[int], bytes],
     delta: int = 0x9E3779B9,
     round_base: int = 6,
     round_addi: int = 52,
     shift_func=xxtea_std_shift,
     debug=False,
 ):
+    if type(src) == bytes:
+        src = byte2dword(src)
+    if type(key) == bytes:
+        key = byte2dword(key)
     src = [c_uint32(i) for i in src]
     key = [c_uint32(i) for i in key]
     sum, e = c_uint32(0), c_uint32(0)
@@ -85,7 +90,7 @@ def xxtea_encrypt(
 # To reverse xxtea, you need to know:
 # function shift, delta, addition_rounds.
 def xxtea_decrypt(
-    src: List[int],
+    src: Union[List[int], bytes],
     key: List[int],
     delta: int = 0x9E3779B9,
     round_base: int = 6,
@@ -93,6 +98,10 @@ def xxtea_decrypt(
     shift_func=xxtea_std_shift,
     debug=False,
 ):
+    if type(src) == bytes:
+        src = byte2dword(src)
+    if type(key) == bytes:
+        key = byte2dword(key)
     src = [c_uint32(i) for i in src]
     key = [c_uint32(i) for i in key]
     sum, e, y = c_uint32(0), c_uint32(0), c_uint32(0)
