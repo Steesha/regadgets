@@ -60,11 +60,15 @@ def xxtea_encrypt(
     round_addi: int = 52,
     shift_func=xxtea_std_shift,
     debug=False,
-):
+) -> Union[List[int], bytes]:
+    in_bytes = False
     if type(src) == bytes:
         src = byte2dword(src)
+        in_bytes = True
     if type(key) == bytes:
         key = byte2dword(key)
+    if in_bytes:
+        return dword2byte(xxtea_encrypt(src, key, delta, round_base, round_addi, shift_func, debug))
     src = [c_uint32(i) for i in src]
     key = [c_uint32(i) for i in key]
     sum, e = c_uint32(0), c_uint32(0)
@@ -97,11 +101,15 @@ def xxtea_decrypt(
     round_addi: int = 52,
     shift_func=xxtea_std_shift,
     debug=False,
-):
+) -> Union[List[int], bytes]:
+    in_bytes = False
     if type(src) == bytes:
         src = byte2dword(src)
+        in_bytes = True
     if type(key) == bytes:
         key = byte2dword(key)
+    if in_bytes:
+        return dword2byte(xxtea_decrypt(src, key, delta, round_base, round_addi, shift_func, debug))
     src = [c_uint32(i) for i in src]
     key = [c_uint32(i) for i in key]
     sum, e, y = c_uint32(0), c_uint32(0), c_uint32(0)

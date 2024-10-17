@@ -222,6 +222,15 @@ class AES:
         # Group key words in 4x4 byte matrices.
         return [key_columns[4*i : 4*(i+1)] for i in range(len(key_columns) // 4)]
 
+    def decrypt_ecb(self, ciphertext):
+        assert len(ciphertext) >= 16
+        assert len(ciphertext) % 16 == 0
+
+        result = b''
+        for i in range(0, len(ciphertext), 16):
+            result += self.encrypt_ecb_block(ciphertext[i:i+16])
+        return result
+
     def encrypt_ecb_block(self, plaintext):
         """
         Encrypts a single block of 16 byte long plaintext.
@@ -243,6 +252,16 @@ class AES:
         add_round_key(plain_state, self._key_matrices[-1])
 
         return matrix2bytes(plain_state)
+
+    def decrypt_ecb(self, ciphertext):
+        assert len(ciphertext) >= 16
+        assert len(ciphertext) % 16 == 0
+
+        result = b''
+        for i in range(0, len(ciphertext), 16):
+            result += self.decrypt_ecb_block(ciphertext[i:i+16])
+        return result
+
 
     def decrypt_ecb_block(self, ciphertext):
         """
