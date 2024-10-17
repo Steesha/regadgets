@@ -3,5 +3,5 @@ from .bxors import bxorr_dec, bxorr_enc, bxorl_dec, bxor, bxorl_enc, bxor_cycle
 from .xxtea import xxtea_decrypt, xxtea_encrypt, xxtea_ciscn2024_shift, xxtea_std_shift
 from .xtea import xtea_decrypt, xtea_encrypt
 from .tea import tea_decrypt, tea_encrypt
-from .aes import AES
+from .aes import AES, AES_cbc_decrypt, AES_cbc_encrypt, AES_ecb_decrypt, AES_ecb_encrypt
 from .blowfish import BlowFish
