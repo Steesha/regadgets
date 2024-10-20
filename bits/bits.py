@@ -214,4 +214,13 @@ def byte2double(src: bytes) -> List[float]:
         double_value = ctypes.cast(ctypes.pointer(full_value), ctypes.POINTER(ctypes.c_double)).contents.value
         result.append(double_value)
     return result
-        
+
+# 4bytes->1double (with padding)
+def byte2float(src: bytes) -> List[float]:
+    qws = byte2dword(src)
+    result = []
+    for i in qws:
+        full_value = ctypes.c_uint32(i)
+        float_value = ctypes.cast(ctypes.pointer(full_value), ctypes.POINTER(ctypes.c_float)).contents.value
+        result.append(float_value)
+    return result
