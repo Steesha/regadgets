@@ -1,27 +1,63 @@
 from typing import List
 from struct import unpack
 import ctypes
+from z3 import LShR
 
 def ror8(x, n):
-    return ((x >> n) | (x << (8 - n))) & 0xFF
+    n &= 7
+    if isinstance(x, int):
+        return ((x >> n) | (x << (8 - n))) & 0xFF
+    else:
+        return (LShR(x, n) | (x << (8 - n))) & 0xFF
+    
 def rol8(x, n):
-    return ((x << n) | (x >> (8 - n))) & 0xFF
+    n &= 7
+    if isinstance(x, int):
+        return ((x << n) | (x >> (8 - n))) & 0xFF
+    else:
+        return (LShR(x, 8 - n) | (x << n)) & 0xFF
 
 def rol16(x, n):
-    return ((x << n) | (x >> (16 - n))) & 0xFFFF
+    n &= 15
+    if isinstance(x, int):
+        return ((x << n) | (x >> (16 - n))) & 0xFFFF
+    else:
+        return (LShR(x, 16 - n) | (x << n)) & 0xFFFF
+
 def ror16(x, n):
-    return ((x >> n) | (x << (16 - n))) & 0xFFFF
+    n &= 15
+    if isinstance(x, int):
+        return ((x >> n) | (x << (16 - n))) & 0xFFFF
+    else:
+        return (LShR(x, n) | (x << (16 - n))) & 0xFFFF
 
 def rol32(x, n):
-    return ((x << n) | (x >> (32 - n))) & 0xFFFFFFFF
+    n &= 31
+    if isinstance(x, int):
+        return ((x << n) | (x >> (32 - n))) & 0xFFFFFFFF
+    else:
+        return ((x << n) | LShR(x, 32 - n)) & 0xFFFFFFFF
+
 def ror32(x, n):
-    return ((x >> n) | (x << (32 - n))) & 0xFFFFFFFF
+    n &= 31
+    if isinstance(x, int):
+        return ((x >> n) | (x << (32 - n))) & 0xFFFFFFFF
+    else:
+        return ((x << (32 - n)) | LShR(x, n)) & 0xFFFFFFFF
 
 def rol64(x, n):
-    return ((x << n) | (x >> (64 - n))) & 0xFFFFFFFFFFFFFFFF
-def ror64(x, n):
-    return ((x >> n) | (x << (64 - n))) & 0xFFFFFFFFFFFFFFFF
+    n &= 63
+    if isinstance(x, int):
+        return ((x << n) | (x >> (64 - n))) & 0xFFFFFFFFFFFFFFFF
+    else:
+        return ((x << n) | LShR(x, 64 - n)) & 0xFFFFFFFFFFFFFFFF
 
+def ror64(x, n):
+    n &= 63
+    if isinstance(x, int):
+        return ((x >> n) | (x << (64 - n))) & 0xFFFFFFFFFFFFFFFF
+    else:
+        return ((x << (64 - n)) | LShR(x, n)) & 0xFFFFFFFFFFFFFFFF
 
 def byte2dword(x: List[int]):
     if len(x) % 4 != 0:
@@ -80,6 +116,10 @@ def qword2byte(x: List[int]):
         for j in range(8):
             result.append((x[i] >> j*8) & 0xff)
     return bytes(result)
+
+def u82byte(x: List[int]) -> bytes:
+    return bytes([i & 0xff for i in x])
+
 
 # pack to tuple [(),(),(),...], each tuple len is `crows`
 def pack_dword(x: List[int], crows: int = 2, padding: bool = False):
