@@ -1,3 +1,4 @@
+from typing import Union, List
 # NOTE:
 # bxorr_dec(bxorr_enc(x)) == bxorr_enc(bxorr_dec(x)) == x
 # From: x_0 ^ x_1, x_1 ^ x_2, x_2 ^ x_3, ..... , x_(n-1) ^ x_n, x_n
@@ -36,8 +37,13 @@ def bxor(data1: bytes, data2: bytes) -> bytes:
         return b''
     return bytes([i ^ j for i, j in zip(data1, data2)])
 
-def bxor_cycle(data1: bytes, data_cycle: bytes) -> bytes:
+def bxor_cycle(data1: Union[bytes, List[int]], data_cycle: Union[bytes, int, List[int]]) -> Union[bytes, List[int]]:
+    if type(data_cycle) == int:
+        data_cycle = [data_cycle]
     result = []
     for i in range(len(data1)):
         result.append(data1[i] ^ data_cycle[i % len(data_cycle)])
-    return bytes(result)
+    if type(data1) == list:
+        return result
+    else:
+        return bytes(result)
