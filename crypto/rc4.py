@@ -1,4 +1,5 @@
 from typing import List, Iterator
+from copy import deepcopy
 def rc4_init(key: bytes, box_size: int = 256) -> List[int]:
     if type(key) == str:
         key = key.encode()
@@ -15,7 +16,9 @@ def rc4_init(key: bytes, box_size: int = 256) -> List[int]:
 
     return s
 
-def rc4_crypt(s: bytes, data: bytes, box_size: int = 256) -> bytes:
+def rc4_crypt(s: List[int], data: bytes, box_size: int = 256, modify_sbox=True) -> bytes:
+    if not modify_sbox:
+        s = deepcopy(s) 
     i, j = 0, 0
     result = bytearray()
 
@@ -32,7 +35,9 @@ def rc4_crypt(s: bytes, data: bytes, box_size: int = 256) -> bytes:
 
     return bytes(result)
 
-def rc4_keystream(s: bytes, buf_len: int, box_size: int = 256)-> Iterator[int]:
+def rc4_keystream(s: bytes, buf_len: int, box_size: int = 256, modify_sbox=True)-> Iterator[int]:
+    if not modify_sbox:
+        s = deepcopy(s) 
     i, j = 0, 0
     # Generate the keystream
     for _ in range(buf_len):
