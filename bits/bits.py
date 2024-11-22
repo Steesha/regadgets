@@ -59,13 +59,15 @@ def ror64(x, n):
     else:
         return ((x << (64 - n)) | LShR(x, n)) & 0xFFFFFFFFFFFFFFFF
 
-def byte2dword(x: List[int]):
+def byte2dword(x: List[int], endian='little'):
     if len(x) % 4 != 0:
         if type(x) == bytes:
             x += b'\x00' * (4 - (len(x) % 4))
         else:
             x += [0] * (4 - (len(x) % 4))
-    return [v[0] for v in (unpack('<I', bytes(x[i:i+4])) for i in range(0, len(x), 4))]
+    packing = '>I' if endian == 'big' else '<I' if endian == 'little' else None
+    if not packing: raise "Endian Error"
+    return [v[0] for v in (unpack(packing, bytes(x[i:i+4])) for i in range(0, len(x), 4))]
 
 def dword2byte(x: List[int]):
     result = []
@@ -78,12 +80,14 @@ def dword2byte(x: List[int]):
             result.append((x[i] >> j*8) & 0xff)
     return bytes(result)
 
-def byte2word(x: List[int]):
+def byte2word(x: List[int], endian='little'):
     if len(x) % 2 != 0:
         if type(x) == bytes:
             x += b'\x00' * (2 - (len(x) % 2))
         else:
             x += [0] * (2 - (len(x) % 2))
+    packing = '>H' if endian == 'big' else '<H' if endian == 'little' else None
+    if not packing: raise "Endian Error"
     return [v[0] for v in (unpack('<H', bytes(x[i:i+2])) for i in range(0, len(x), 2))]
 
 def word2byte(x: List[int]):
@@ -98,13 +102,16 @@ def word2byte(x: List[int]):
     return bytes(result)
 
 
-def byte2qword(x: List[int]):
+def byte2qword(x: List[int], endian='little'):
     if len(x) % 8 != 0:
         if type(x) == bytes:
             x += b'\x00' * (8 - (len(x) % 8))
         else:
             x += [0] * (8 - (len(x) % 8))
-    return [v[0] for v in (unpack('<Q', bytes(x[i:i+8])) for i in range(0, len(x), 8))]
+
+    packing = '>Q' if endian == 'big' else '<Q' if endian == 'little' else None
+    if not packing: raise "Endian Error"
+    return [v[0] for v in (unpack(packing, bytes(x[i:i+8])) for i in range(0, len(x), 8))]
 
 def qword2byte(x: List[int]):
     result = []
@@ -115,7 +122,7 @@ def qword2byte(x: List[int]):
     for i in range(len(x)):
         for j in range(8):
             result.append((x[i] >> j*8) & 0xff)
-    return bytes(result)
+    return result
 
 def u82byte(x: List[int]) -> bytes:
     return bytes([i & 0xff for i in x])
@@ -136,6 +143,14 @@ def unpack_dword(x: List[tuple]):
     for i in x:
         result += list(i)
     return result
+
+def bswap32(x: List[int]):
+    y = dword2byte(x)
+    r = b''
+    for i in range(0, len(y), 4):
+        r += y[i:i+4][::-1]
+    return byte2dword(r)
+        
 
 import struct
 import sys
