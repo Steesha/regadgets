@@ -3,7 +3,7 @@ from .base45 import b45decode, b45encode
 from .base62 import  encodebytes as b62encode, decodebytes as b62decode
 from .base58 import b58decode, b58encode, BITCOIN_ALPHABET as B58_BITCOIN_ALPHABET
 from .base91 import decode as b91decode, encode as b91encode
-from .py3base92 import b92decode, b92encode
+from .py3base92 import Base92
 from base2048 import decode as b2048decode, encode as b2048encode
 from .base65536 import decode as b65536decode, encode as b65536encode
 
@@ -113,10 +113,10 @@ def encode_b91(raw: bytes, table: str = "") -> str:
 def decode_b92(encoded: str, table: str = "") -> bytes:
     table = BASE92_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE92_STD_TABLE)
-    return b92decode(encoded)
+    return Base92.b92decode(encoded)
 
 def encode_b92(raw: bytes, table: str = "") -> str:
-    result = b92encode(raw)
+    result = Base92.b92encode(raw)
     table = BASE92_STD_TABLE if table == "" else table
     result = str_trans(result, BASE92_STD_TABLE, table)
     return result
