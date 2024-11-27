@@ -1,6 +1,6 @@
 import base64
 from .base45 import b45decode, b45encode
-from .base62 import b62decode, b62encode
+from .base62 import  encodebytes as b62encode, decodebytes as b62decode
 from .base58 import b58decode, b58encode, BITCOIN_ALPHABET as B58_BITCOIN_ALPHABET
 from .base91 import decode as b91decode, encode as b91encode
 from .py3base92 import b92decode, b92encode
