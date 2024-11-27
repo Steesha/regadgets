@@ -64,8 +64,9 @@ jobs:
           name: release-dists
           path: dist/
 
-      - name: Publish release distributions to PyPI
+      - name: Publish release distributions to Test-PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+          repository-url: https://test.pypi.org/legacy/
           password: ${{ secrets.PYPI_APIKEY }}
