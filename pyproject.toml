@@ -20,7 +20,6 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Intended Audience :: Developers",
-    "Topic :: Software Development :: Reverse Engineering"
 ]
 
 [project.urls]
