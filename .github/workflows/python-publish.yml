@@ -21,15 +21,20 @@ jobs:
         run: |
           # 提取当前版本号
           current_version=$(grep -E '^version\s*=\s*".+"' pyproject.toml | sed -E 's/version\s*=\s*"([^"]+)"/\1/')
+          
           # 提取之前版本号
-          git fetch origin HEAD~1:refs/remotes/origin/prev
-          git checkout origin/prev
-          previous_version=$(grep -E '^version\s*=\s*".+"' pyproject.toml | sed -E 's/version\s*=\s*"([^"]+)"/\1/')
+          previous_version=$(git show HEAD~1:pyproject.toml | grep -E '^version\s*=\s*".+"' | sed -E 's/version\s*=\s*"([^"]+)"/\1/')
+          
+          # 输出版本号到 GitHub 环境变量
           echo "current_version=$current_version" >> $GITHUB_ENV
           echo "previous_version=$previous_version" >> $GITHUB_ENV
+          
+          # 比较版本号，如果相同则中止工作流
           if [[ "$current_version" == "$previous_version" ]]; then
             echo "Version has not changed."
             exit 1  # 中止工作流，因为版本号没有变动
+          else
+            echo "Version has changed: $previous_version -> $current_version"
           fi
 
   release-build:
