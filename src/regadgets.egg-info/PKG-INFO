@@ -1,0 +1,28 @@
+Metadata-Version: 2.1
+Name: regadgets
+Version: 2.0.0
+Summary: A Python Package For Reverse Engineering.
+Author-email: Steesha <jsteesha@gmail.com>
+License: GNU General Public License v3 (GPLv3)
+Project-URL: Homepage, https://github.com/Steesha/regadgets
+Project-URL: Changelog, https://github.com/Steesha/regadgets/blob/main/CHANGELOG.md
+Keywords: reverse,tool,gadgets,reverse engineering
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Reverse Engineering
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: z3-solver>=4.13.0.0
+Requires-Dist: base2048>=0.1.3
+
+# Project Regadgets
+## Name origins from Reverse and Gadgets, Gadgets is a piece of codes impls easy algorithms or functions.
+
+## Dependencies (you can find in requirements.txt)
+### z3-solver
+
+## Usage
+### from regadgets import *

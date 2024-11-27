@@ -1,11 +1,11 @@
 import base64
-import regadgets.bases.base58 as base58
-import regadgets.bases.base91 as base91
-import regadgets.bases.py3base92 as py3base92
-import regadgets.bases.base62 as base62
-import regadgets.bases.base45 as base45
-import regadgets.bases.base2048 as base2048
-import regadgets.bases.base65536 as base65536
+from .base45 import b45decode, b45encode
+from .base62 import b62decode, b62encode
+from .base58 import b58decode, b58encode, BITCOIN_ALPHABET as B58_BITCOIN_ALPHABET
+from .base91 import decode as b91decode, encode as b91encode
+from .py3base92 import b92decode, b92encode
+from base2048 import decode as b2048decode, encode as b2048encode
+from .base65536 import decode as b65536decode, encode as b65536encode
 
 BASE16_STD_TABLE = r"0123456789ABCDEF"
 BASE32_STD_TABLE = r"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
@@ -49,10 +49,10 @@ def encode_b32(raw: bytes, table: str = "") -> str:
 def decode_b45(encoded: str, table: str = "") -> bytes:
     table = BASE45_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE45_STD_TABLE)
-    return base45.b45decode(encoded)
+    return b45decode(encoded)
 
 def encode_b45(raw: bytes, table: str = "") -> str:
-    result = base45.b45encode(raw).decode()
+    result = b45encode(raw).decode()
     table = BASE45_STD_TABLE if table == "" else table
     result = str_trans(result, BASE45_STD_TABLE, table)
     return result
@@ -60,10 +60,10 @@ def encode_b45(raw: bytes, table: str = "") -> str:
 def decode_b62(encoded: str, table: str = "") -> bytes:
     table = BASE62_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE62_STD_TABLE)
-    return base62.decodebytes(encoded)
+    return b62decode.decodebytes(encoded)
 
 def encode_b62(raw: bytes, table: str = "") -> str:
-    result = base62.encodebytes(raw)
+    result = b62encode.encodebytes(raw)
     table = BASE62_STD_TABLE if table == "" else table
     result = str_trans(result, BASE62_STD_TABLE, table)
     return result
@@ -80,11 +80,11 @@ def encode_b64(raw: bytes, table: str = "") -> str:
     return result
 
 
-def decode_b58(encoded: str, table: str = base58.BITCOIN_ALPHABET) -> bytes:
-    return base58.b58decode(encoded, table)
+def decode_b58(encoded: str, table: str = B58_BITCOIN_ALPHABET) -> bytes:
+    return b58decode(encoded, table)
 
-def encode_b58(raw: bytes, table: str = base58.BITCOIN_ALPHABET) -> str:
-    return base58.b58encode(raw, table).decode('utf-8')
+def encode_b58(raw: bytes, table: str = B58_BITCOIN_ALPHABET) -> str:
+    return b58encode(raw, table).decode('utf-8')
 
 
 def decode_b85(encoded: str, table: str = "") -> bytes:
@@ -101,10 +101,10 @@ def encode_b85(raw: bytes, table: str = "") -> str:
 def decode_b91(encoded: str, table: str = "") -> bytes:
     table = BASE91_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE91_STD_TABLE)
-    return bytes(base91.decode(encoded))
+    return bytes(b91decode(encoded))
 
 def encode_b91(raw: bytes, table: str = "") -> str:
-    result = base91.encode(raw)
+    result = b91encode(raw)
     table = BASE91_STD_TABLE if table == "" else table
     result = str_trans(result, BASE91_STD_TABLE, table)
     return result
@@ -113,22 +113,22 @@ def encode_b91(raw: bytes, table: str = "") -> str:
 def decode_b92(encoded: str, table: str = "") -> bytes:
     table = BASE92_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE92_STD_TABLE)
-    return py3base92.b92decode(encoded)
+    return b92decode(encoded)
 
 def encode_b92(raw: bytes, table: str = "") -> str:
-    result = py3base92.b92encode(raw)
+    result = b92encode(raw)
     table = BASE92_STD_TABLE if table == "" else table
     result = str_trans(result, BASE92_STD_TABLE, table)
     return result
 
 def encode_b2048(raw: bytes) -> str:
-    return base2048.encode(raw)
+    return b2048encode(raw)
 
 def decode_b2048(encoded: str) -> bytes:
-    return base2048.decode(encoded)
+    return b2048decode(encoded)
 
 def encode_b65536(raw: bytes) -> str:
-    return base65536.encode(raw)
+    return b65536encode(raw)
 
 def decode_b65536(encoded: str) -> bytes:
-    return base65536.decode(encoded)
+    return b65536decode(encoded)
