@@ -18,6 +18,7 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 
+
 [project.urls]
 Homepage = "https://github.com/Steesha/regadgets"
 Changelog = "https://github.com/Steesha/regadgets/blob/main/CHANGELOG.md"
