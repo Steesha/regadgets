@@ -1,6 +1,6 @@
 import base64
 from .base45 import b45decode, b45encode
-from .base62 import  encodebytes as b62encode, decodebytes as b62decode
+from .base62 import encodebytes as b62encode, decodebytes as b62decode
 from .base58 import b58decode, b58encode, BITCOIN_ALPHABET as B58_BITCOIN_ALPHABET
 from .base91 import decode as b91decode, encode as b91encode
 from .py3base92 import Base92
@@ -40,6 +40,7 @@ def decode_b32(encoded: str, table: str = "") -> bytes:
     table = BASE32_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE32_STD_TABLE)
     return base64.b32decode(encoded)
+
 def encode_b32(raw: bytes, table: str = "") -> str:
     result = base64.b32encode(raw)
     table = BASE32_STD_TABLE if table == "" else table
@@ -60,10 +61,10 @@ def encode_b45(raw: bytes, table: str = "") -> str:
 def decode_b62(encoded: str, table: str = "") -> bytes:
     table = BASE62_STD_TABLE if table == "" else table
     encoded = str_trans(encoded, table, BASE62_STD_TABLE)
-    return b62decode.decodebytes(encoded)
+    return b62decode(encoded)
 
 def encode_b62(raw: bytes, table: str = "") -> str:
-    result = b62encode.encodebytes(raw)
+    result = b62encode(raw)
     table = BASE62_STD_TABLE if table == "" else table
     result = str_trans(result, BASE62_STD_TABLE, table)
     return result
