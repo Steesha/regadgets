@@ -8,12 +8,12 @@ def xtea_encrypt(
     if type(src) == bytes:
         result = b''
         for i in pack_dword(byte2dword(src)):
-            result += dword2byte(xtea_decrypt(i, key, delta, rounds))
+            result += dword2byte(xtea_encrypt(i, key, delta, rounds))
         return result
     elif type(src) == list:
         result = b''
         for i in pack_dword(src):
-            result += dword2byte(xtea_decrypt(i, key, delta, rounds))
+            result += dword2byte(xtea_encrypt(i, key, delta, rounds))
         return result
     elif type(src) != tuple:
         raise "wrong src type"
