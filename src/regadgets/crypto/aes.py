@@ -12,6 +12,8 @@ Although this is an exercise, the `encrypt` and `decrypt` functions should
 provide reasonable security to encrypted messages.
 """
 
+from typing import Optional
+
 
 s_box = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -171,6 +173,80 @@ def split_blocks(message, block_size=16, require_padding=True):
         return [message[i:i+16] for i in range(0, len(message), block_size)]
 
 
+def _validate_key_size(key, expected_lengths=None):
+    expected_lengths = (16, 24, 32) if expected_lengths is None else expected_lengths
+    if len(key) not in expected_lengths:
+        raise ValueError(f"key must be {', '.join(str(i * 8) for i in expected_lengths)} bits")
+
+
+def _validate_iv(iv):
+    if len(iv) != 16:
+        raise ValueError("iv must be 16 bytes")
+
+
+def _coerce_bytes(value, field_name: str, encoding: str = "utf-8"):
+    if isinstance(value, bytes):
+        return value
+    if isinstance(value, bytearray):
+        return bytes(value)
+    if isinstance(value, str):
+        return value.encode(encoding)
+    raise TypeError(f"{field_name} must be bytes, bytearray, or str")
+
+
+def _decode_hex_or_text(value, field_name: str, encoding: str = "utf-8", text_format: str = "auto"):
+    if isinstance(value, (bytes, bytearray)):
+        return bytes(value)
+    if not isinstance(value, str):
+        raise TypeError(f"{field_name} must be bytes, bytearray, or str")
+    if text_format == "text":
+        return value.encode(encoding)
+    if text_format == "hex":
+        return bytes.fromhex(value)
+    if text_format == "auto":
+        compact = value.replace(" ", "")
+        if len(compact) % 2 == 0:
+            try:
+                return bytes.fromhex(compact)
+            except ValueError:
+                pass
+        return value.encode(encoding)
+    raise ValueError("text_format must be 'auto', 'text', or 'hex'")
+
+
+def _normalize_key(key, key_format: str = "auto", encoding: str = "utf-8"):
+    return _decode_hex_or_text(key, "key", encoding=encoding, text_format=key_format)
+
+
+def _normalize_iv(iv, iv_format: str = "auto", encoding: str = "utf-8"):
+    iv_bytes = _decode_hex_or_text(iv, "iv", encoding=encoding, text_format=iv_format)
+    _validate_iv(iv_bytes)
+    return iv_bytes
+
+
+def _resolve_aes_callable(mode: str, operation: str):
+    operation = operation.lower()
+    mode = mode.lower()
+    aes_callables = {
+        ("ecb", "encrypt"): AES_ecb_encrypt,
+        ("ecb", "decrypt"): AES_ecb_decrypt,
+        ("cbc", "encrypt"): AES_cbc_encrypt,
+        ("cbc", "decrypt"): AES_cbc_decrypt,
+        ("pcbc", "encrypt"): AES_pcbc_encrypt,
+        ("pcbc", "decrypt"): AES_pcbc_decrypt,
+        ("cfb", "encrypt"): AES_cfb_encrypt,
+        ("cfb", "decrypt"): AES_cfb_decrypt,
+        ("ofb", "encrypt"): AES_ofb_encrypt,
+        ("ofb", "decrypt"): AES_ofb_decrypt,
+        ("ctr", "encrypt"): AES_ctr_encrypt,
+        ("ctr", "decrypt"): AES_ctr_decrypt,
+    }
+    try:
+        return aes_callables[(mode, operation)]
+    except KeyError as exc:
+        raise ValueError("mode must be one of: ecb, cbc, pcbc, cfb, ofb, ctr") from exc
+
+
 class AES:
     """
     Class for AES-128 encryption with CBC mode and PKCS#7.
@@ -183,7 +259,7 @@ class AES:
         """
         Initializes the object with a given key.
         """
-        assert len(master_key) in AES.rounds_by_key_size
+        _validate_key_size(master_key)
         self.n_rounds = AES.rounds_by_key_size[len(master_key)]
         self._key_matrices = self._expand_key(master_key)
 
@@ -290,7 +366,7 @@ class AES:
         Encrypts `plaintext` using CBC mode and PKCS#7 padding, with the given
         initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         plaintext = pad(plaintext)
 
@@ -309,7 +385,7 @@ class AES:
         Decrypts `ciphertext` using CBC mode and PKCS#7 padding, with the given
         initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         previous = iv
@@ -325,7 +401,7 @@ class AES:
         Encrypts `plaintext` using PCBC mode and PKCS#7 padding, with the given
         initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         plaintext = pad(plaintext)
 
@@ -346,7 +422,7 @@ class AES:
         Decrypts `ciphertext` using PCBC mode and PKCS#7 padding, with the given
         initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         prev_ciphertext = iv
@@ -364,7 +440,7 @@ class AES:
         """
         Encrypts `plaintext` with the given initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         prev_ciphertext = iv
@@ -380,7 +456,7 @@ class AES:
         """
         Decrypts `ciphertext` with the given initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         prev_ciphertext = iv
@@ -396,7 +472,7 @@ class AES:
         """
         Encrypts `plaintext` using OFB mode initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         previous = iv
@@ -413,7 +489,7 @@ class AES:
         """
         Decrypts `ciphertext` using OFB mode initialization vector (iv).
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         previous = iv
@@ -430,7 +506,7 @@ class AES:
         """
         Encrypts `plaintext` using CTR mode with the given nounce/IV.
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         nonce = iv
@@ -446,7 +522,7 @@ class AES:
         """
         Decrypts `ciphertext` using CTR mode with the given nounce/IV.
         """
-        assert len(iv) == 16
+        _validate_iv(iv)
 
         blocks = []
         nonce = iv
@@ -474,3 +550,205 @@ def AES_cbc_encrypt(data: bytes, key: bytes, iv: bytes):
 def AES_cbc_decrypt(data: bytes, key: bytes, iv: bytes):
     a = AES(key)
     return a.decrypt_cbc(data, iv)
+
+
+def AES_pcbc_encrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.encrypt_pcbc(data, iv)
+
+
+def AES_pcbc_decrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.decrypt_pcbc(data, iv)
+
+
+def AES_cfb_encrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.encrypt_cfb(data, iv)
+
+
+def AES_cfb_decrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.decrypt_cfb(data, iv)
+
+
+def AES_ofb_encrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.encrypt_ofb(data, iv)
+
+
+def AES_ofb_decrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.decrypt_ofb(data, iv)
+
+
+def AES_ctr_encrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.encrypt_ctr(data, iv)
+
+
+def AES_ctr_decrypt(data: bytes, key: bytes, iv: bytes):
+    a = AES(key)
+    return a.decrypt_ctr(data, iv)
+
+
+def AES128_ecb_encrypt(data: bytes, key: bytes):
+    _validate_key_size(key, (16,))
+    return AES_ecb_encrypt(data, key)
+
+
+def AES128_ecb_decrypt(data: bytes, key: bytes):
+    _validate_key_size(key, (16,))
+    return AES_ecb_decrypt(data, key)
+
+
+def AES128_cbc_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_cbc_encrypt(data, key, iv)
+
+
+def AES128_cbc_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_cbc_decrypt(data, key, iv)
+
+
+def AES128_cfb_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_cfb_encrypt(data, key, iv)
+
+
+def AES128_cfb_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_cfb_decrypt(data, key, iv)
+
+
+def AES128_ofb_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_ofb_encrypt(data, key, iv)
+
+
+def AES128_ofb_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_ofb_decrypt(data, key, iv)
+
+
+def AES128_ctr_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_ctr_encrypt(data, key, iv)
+
+
+def AES128_ctr_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_ctr_decrypt(data, key, iv)
+
+
+def AES128_pcbc_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_pcbc_encrypt(data, key, iv)
+
+
+def AES128_pcbc_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (16,))
+    return AES_pcbc_decrypt(data, key, iv)
+
+
+def AES256_ecb_encrypt(data: bytes, key: bytes):
+    _validate_key_size(key, (32,))
+    return AES_ecb_encrypt(data, key)
+
+
+def AES256_ecb_decrypt(data: bytes, key: bytes):
+    _validate_key_size(key, (32,))
+    return AES_ecb_decrypt(data, key)
+
+
+def AES256_cbc_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_cbc_encrypt(data, key, iv)
+
+
+def AES256_cbc_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_cbc_decrypt(data, key, iv)
+
+
+def AES256_cfb_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_cfb_encrypt(data, key, iv)
+
+
+def AES256_cfb_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_cfb_decrypt(data, key, iv)
+
+
+def AES256_ofb_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_ofb_encrypt(data, key, iv)
+
+
+def AES256_ofb_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_ofb_decrypt(data, key, iv)
+
+
+def AES256_ctr_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_ctr_encrypt(data, key, iv)
+
+
+def AES256_ctr_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_ctr_decrypt(data, key, iv)
+
+
+def AES256_pcbc_encrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_pcbc_encrypt(data, key, iv)
+
+
+def AES256_pcbc_decrypt(data: bytes, key: bytes, iv: bytes):
+    _validate_key_size(key, (32,))
+    return AES_pcbc_decrypt(data, key, iv)
+
+
+def aes_encrypt(
+    data,
+    key,
+    mode: str = "cbc",
+    iv: Optional[bytes] = None,
+    key_format: str = "auto",
+    iv_format: str = "auto",
+    data_format: str = "auto",
+    encoding: str = "utf-8",
+):
+    data_bytes = _decode_hex_or_text(data, "data", encoding=encoding, text_format=data_format)
+    key_bytes = _normalize_key(key, key_format=key_format, encoding=encoding)
+    encryptor = _resolve_aes_callable(mode, "encrypt")
+    if mode.lower() == "ecb":
+        return encryptor(data_bytes, key_bytes)
+    if iv is None:
+        raise ValueError("iv is required for non-ECB modes")
+    iv_bytes = _normalize_iv(iv, iv_format=iv_format, encoding=encoding)
+    return encryptor(data_bytes, key_bytes, iv_bytes)
+
+
+def aes_decrypt(
+    data,
+    key,
+    mode: str = "cbc",
+    iv: Optional[bytes] = None,
+    key_format: str = "auto",
+    iv_format: str = "auto",
+    data_format: str = "auto",
+    encoding: str = "utf-8",
+):
+    data_bytes = _decode_hex_or_text(data, "data", encoding=encoding, text_format=data_format)
+    key_bytes = _normalize_key(key, key_format=key_format, encoding=encoding)
+    decryptor = _resolve_aes_callable(mode, "decrypt")
+    if mode.lower() == "ecb":
+        return decryptor(data_bytes, key_bytes)
+    if iv is None:
+        raise ValueError("iv is required for non-ECB modes")
+    iv_bytes = _normalize_iv(iv, iv_format=iv_format, encoding=encoding)
+    return decryptor(data_bytes, key_bytes, iv_bytes)

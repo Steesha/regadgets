@@ -4,8 +4,13 @@ from .base62 import encodebytes as b62encode, decodebytes as b62decode
 from .base58 import b58decode, b58encode, BITCOIN_ALPHABET as B58_BITCOIN_ALPHABET
 from .base91 import decode as b91decode, encode as b91encode
 from .py3base92 import Base92
-from base2048 import decode as b2048decode, encode as b2048encode
 from .base65536 import decode as b65536decode, encode as b65536encode
+
+try:
+    from base2048 import decode as b2048decode, encode as b2048encode
+except ImportError:
+    b2048decode = None
+    b2048encode = None
 
 BASE16_STD_TABLE = r"0123456789ABCDEF"
 BASE32_STD_TABLE = r"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
@@ -16,6 +21,11 @@ BASE64_STD_TABLE = r'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456
 BASE85_STD_TABLE = r'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~'
 BASE91_STD_TABLE = r'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"'
 BASE92_STD_TABLE = r"!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_abcdefghijklmnopqrstuvwxyz{|}"
+
+
+def _require_base2048():
+    if b2048encode is None or b2048decode is None:
+        raise ImportError("base2048 is required for Base2048 encode/decode support")
 
 def str_trans(raw: str, from_table: str, to_table: str) -> str:
     if from_table == to_table:
@@ -31,7 +41,7 @@ def decode_b16(encoded: str, table: str = "") -> bytes:
     return base64.b16decode(encoded)
 
 def encode_b16(raw: bytes, table: str = "") -> str:
-    result = base64.b16encode(raw)
+    result = base64.b16encode(raw).decode("ascii")
     table = BASE16_STD_TABLE if table == "" else table
     result = str_trans(result, BASE16_STD_TABLE, table)
     return result
@@ -42,7 +52,7 @@ def decode_b32(encoded: str, table: str = "") -> bytes:
     return base64.b32decode(encoded)
 
 def encode_b32(raw: bytes, table: str = "") -> str:
-    result = base64.b32encode(raw)
+    result = base64.b32encode(raw).decode("ascii")
     table = BASE32_STD_TABLE if table == "" else table
     result = str_trans(result, BASE32_STD_TABLE, table)
     return result
@@ -123,9 +133,11 @@ def encode_b92(raw: bytes, table: str = "") -> str:
     return result
 
 def encode_b2048(raw: bytes) -> str:
+    _require_base2048()
     return b2048encode(raw)
 
 def decode_b2048(encoded: str) -> bytes:
+    _require_base2048()
     return b2048decode(encoded)
 
 def encode_b65536(raw: bytes) -> str:

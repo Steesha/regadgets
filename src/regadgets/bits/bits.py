@@ -61,12 +61,13 @@ def ror64(x, n):
 
 def byte2dword(x: List[int], endian='little'):
     if len(x) % 4 != 0:
-        if type(x) == bytes:
+        if isinstance(x, bytes):
             x += b'\x00' * (4 - (len(x) % 4))
         else:
             x += [0] * (4 - (len(x) % 4))
     packing = '>I' if endian == 'big' else '<I' if endian == 'little' else None
-    if not packing: raise "Endian Error"
+    if not packing:
+        raise ValueError("Endian Error")
     return [v[0] for v in (unpack(packing, bytes(x[i:i+4])) for i in range(0, len(x), 4))]
 
 def dword2byte(x: List[int]):
@@ -82,13 +83,14 @@ def dword2byte(x: List[int]):
 
 def byte2word(x: List[int], endian='little'):
     if len(x) % 2 != 0:
-        if type(x) == bytes:
+        if isinstance(x, bytes):
             x += b'\x00' * (2 - (len(x) % 2))
         else:
             x += [0] * (2 - (len(x) % 2))
     packing = '>H' if endian == 'big' else '<H' if endian == 'little' else None
-    if not packing: raise "Endian Error"
-    return [v[0] for v in (unpack('<H', bytes(x[i:i+2])) for i in range(0, len(x), 2))]
+    if not packing:
+        raise ValueError("Endian Error")
+    return [v[0] for v in (unpack(packing, bytes(x[i:i+2])) for i in range(0, len(x), 2))]
 
 def word2byte(x: List[int]):
     result = []
@@ -104,13 +106,14 @@ def word2byte(x: List[int]):
 
 def byte2qword(x: List[int], endian='little'):
     if len(x) % 8 != 0:
-        if type(x) == bytes:
+        if isinstance(x, bytes):
             x += b'\x00' * (8 - (len(x) % 8))
         else:
             x += [0] * (8 - (len(x) % 8))
 
     packing = '>Q' if endian == 'big' else '<Q' if endian == 'little' else None
-    if not packing: raise "Endian Error"
+    if not packing:
+        raise ValueError("Endian Error")
     return [v[0] for v in (unpack(packing, bytes(x[i:i+8])) for i in range(0, len(x), 8))]
 
 def qword2byte(x: List[int]):
@@ -122,7 +125,7 @@ def qword2byte(x: List[int]):
     for i in range(len(x)):
         for j in range(8):
             result.append((x[i] >> j*8) & 0xff)
-    return result
+    return bytes(result)
 
 def u82byte(x: List[int]) -> bytes:
     return bytes([i & 0xff for i in x])
